@@ -9,6 +9,7 @@ import path from 'path';
 import bodyparser from 'body-parser'
 import { fileURLToPath } from 'url';
 import authRoute from './routes/auth.js'
+import userRoute from './routes/users.js'
 import { Register } from './controllers/auth.js';
 
 // configurations
@@ -42,6 +43,7 @@ app.post('/auth/register', upload.single("picture"), Register)
 
 // Routes
 app.use('/auth',authRoute);
+app.use('/users',userRoute);
 
 // MongoDb connection
 const PORT = process.env.PORT || 8800
