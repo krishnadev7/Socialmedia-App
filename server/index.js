@@ -40,6 +40,9 @@ const upload = multer({storage})
 // Routes with file upload
 app.post('/auth/register', upload.single("picture"), Register)
 
+// Routes
+app.use('/auth',authRoute);
+
 // MongoDb connection
 const PORT = process.env.PORT || 8800
 const Connect = async() => {
