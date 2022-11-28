@@ -8,9 +8,17 @@ import dotenv from 'dotenv';
 import path from 'path';
 import bodyparser from 'body-parser'
 import { fileURLToPath } from 'url';
+
+// routes & controllers imports
 import authRoute from './routes/auth.js'
 import userRoute from './routes/users.js'
+import PostRoute from './routes/post.js'
 import { Register } from './controllers/auth.js';
+import { verifyToken } from './middleware/auth.js';
+import { createPost } from './controllers/post.js';
+import { User } from './models/UserModel.js';
+import { Post } from './models/PostModel.js';
+import { users,posts } from './data/data.js';
 
 // configurations
 const __filename = fileURLToPath(import.meta.url);
@@ -40,10 +48,12 @@ const upload = multer({storage})
 
 // Routes with file upload
 app.post('/auth/register', upload.single("picture"), Register)
+app.post('/posts',verifyToken,upload.single("picture"),createPost)
 
 // Routes
 app.use('/auth',authRoute);
 app.use('/users',userRoute);
+app.use('/posts',PostRoute);
 
 // MongoDb connection
 const PORT = process.env.PORT || 8800
@@ -52,6 +62,10 @@ const Connect = async() => {
         await mongoose.connect(process.env.MONGO_URL)
         app.listen(PORT,() => {
             console.log(`SERVER CONNCETED ON PORT http://localhost:${PORT}`);
+
+            // only uncommend this code when to add data.
+            // User.insertMany(users);
+            // Post.insertMany(posts);
         })
     } catch (error) {
         console.log(error);
