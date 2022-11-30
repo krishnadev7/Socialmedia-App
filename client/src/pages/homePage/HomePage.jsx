@@ -1,6 +1,10 @@
+import { Box } from '@mui/material';
+import Navbar from '../navbar/Navbar';
 
 export default function HomePage() {
   return (
-    <div>HomePage</div>
-  )
+    <Box>
+      <Navbar />
+    </Box>
+  );
 }
