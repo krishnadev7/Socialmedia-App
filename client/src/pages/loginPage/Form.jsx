@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 // components and redux store imports
 import FLexBetween from '../../components/FlexBetween';
-import { SetLogin } from '../../redux/store';
+import { setLogin, SetLogin } from '../../redux/store';
 
 // mui icon imports
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -15,7 +15,13 @@ import * as yup from 'yup';
 import { Formik } from 'formik';
 import Dropzone from 'react-dropzone';
 import { Box } from '@mui/system';
-import { TextField, Typography } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required('required'),
@@ -56,7 +62,54 @@ const Form = () => {
   const isLogin = pageType === 'login';
   const isRegister = pageType === 'register';
 
-  const handleFormSubmit = async () => {};
+  const register = async (values, onSubmitProps) => {
+    // uploading data with user Profile image
+    const formData = new FormData();
+    for (let value in values) {
+      formData.append(value, values[value]);
+    }
+    formData.append('picturePath', values.picture.name);
+
+    // uploading
+    const savedUserResponse = await fetch(
+      'http://localhost:8800/auth/register',
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+    const savedUser = await savedUserResponse.json();
+    onSubmitProps.resetForm();
+
+    if (savedUser) {
+      setPageType('login');
+    }
+  };
+
+  const login = async (values, onSubmitProps) => {
+    const loggedInResponse = await fetch('http://localhost:8800/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values),
+    });
+    const loggedIn = await loggedInResponse.json();
+    onSubmitProps.resetForm();
+
+    if (loggedIn) {
+      dispatch(setLogin({ user: loggedIn.user, token: loggedIn.token }));
+      navigate('/home');
+    }
+  };
+
+  const handleFormSubmit = async (values, onSubmitProps) => {
+    if (isLogin) {
+      await login(values, onSubmitProps);
+    }
+
+    if (isRegister) {
+      await register(values, onSubmitProps);
+    }
+  };
 
   return (
     <Formik
@@ -68,17 +121,17 @@ const Form = () => {
         values,
         errors,
         touched,
+        handleBlur,
+        handleChange,
+        handleSubmit,
         setFieldValue,
         resetForm,
-        handleChange,
-        handleBlur,
-        handleSubmit,
       }) => (
         <form onSubmit={handleSubmit}>
           <Box
             display='grid'
             gap='30px'
-            gridTemplateColumns='reapeat(4,minmax(0,1fr))'
+            gridTemplateColumns='repeat(4,minmax(0,1fr))'
             sx={{
               '& > div': { gridColumn: isNonMobile ? undefined : 'span 4' },
             }}
@@ -86,7 +139,7 @@ const Form = () => {
             {isRegister && (
               <>
                 <TextField
-                  label={firstName}
+                  label='First Name'
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.firstName}
@@ -98,17 +151,17 @@ const Form = () => {
                   sx={{ gridColumn: 'span 2' }}
                 />
                 <TextField
-                  label={lastname}
+                  label='Last Name'
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.lastname}
                   name='lastname'
                   error={Boolean(touched.lastname) && Boolean(errors.lastname)}
                   helperText={touched.lastname && errors.lastname}
-                  sx={{ gridColumn: 'span 4' }}
+                  sx={{ gridColumn: 'span 2' }}
                 />
                 <TextField
-                  label={location}
+                  label='Location'
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.location}
@@ -118,7 +171,7 @@ const Form = () => {
                   sx={{ gridColumn: 'span 4' }}
                 />
                 <TextField
-                  label={occupation}
+                  label='Occupation'
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.occupation}
@@ -152,10 +205,10 @@ const Form = () => {
                         <input {...getInputProps()} />
                         {!values.picture ? (
                           <p>Add Picture Here</p>
-                        ):(
+                        ) : (
                           <FLexBetween>
                             <Typography>{values.picture.name}</Typography>
-                            <EditOutLinedIcon/>
+                            <EditOutlinedIcon />
                           </FLexBetween>
                         )}
                       </Box>
@@ -164,6 +217,62 @@ const Form = () => {
                 </Box>
               </>
             )}
+            <TextField
+              label='Email'
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={values.email}
+              name='email'
+              error={Boolean(touched.email) && Boolean(errors.email)}
+              helperText={touched.email && errors.email}
+              sx={{ gridColumn: 'span 4' }}
+            />
+            <TextField
+              label='Password'
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={values.password}
+              name='password'
+              type='password'
+              error={Boolean(touched.password) && Boolean(errors.password)}
+              helperText={touched.password && errors.password}
+              sx={{ gridColumn: 'span 4' }}
+            />
+          </Box>
+
+          {/* Buttons */}
+          <Box>
+            <Button
+              fullWidth
+              type='submit'
+              sx={{
+                m: '2rem 0',
+                p: '1rem',
+                backgroundColor: palette.primary.main,
+                color: palette.background.alt,
+                '& : hover': { color: palette.primary.main },
+              }}
+            >
+              {isLogin ? 'Login' : 'Register'}
+            </Button>
+            <Typography
+              onClick={() => {
+                setPageType(isLogin ? 'register' : 'login');
+                resetForm();
+              }}
+              sx={{
+                textDecoration: 'underling',
+                color: palette.primary.main,
+                '&:hover': {
+                  cursor: 'pointer',
+                  color: palette.primary.light,
+                },
+              }}
+            >
+              {isLogin
+                ? "Don't have an account? Sign Up here."
+                : 'Already have an account? Login Please'}
+            </Typography>
           </Box>
         </form>
       )}

@@ -1,6 +1,7 @@
 // Mui imports
 import { useTheme } from '@emotion/react';
 import { Box, Typography, useMediaQuery } from '@mui/material';
+import Form from './Form';
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -35,8 +36,10 @@ export default function LoginPage() {
         backgroundColor={theme.palette.background.alt}
       >
         <Typography fontWeight='500' variant='h5' sx={{ mb: '1.5rem' }}>
-          Welcome to The Socializer. A perfect application to Socialize with others..
+          Welcome to The Socializer. A perfect application to Socialize with
+          others..
         </Typography>
+        <Form />
       </Box>
     </Box>
   );
